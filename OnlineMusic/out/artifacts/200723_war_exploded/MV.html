@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MV播放</title>
+    <!-- 1. 导入CSS的全局样式 -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <!-- 2. jQuery导入，建议使用1.9以上的版本 -->
+    <script src="js/jquery-3.1.1.min.js"></script>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+
+    <!-- 3. 导入bootstrap的js文件 -->
+    <style type="text/css">
+        td, th {
+            text-align: center;
+        }
+        .mydiv {
+            width: 1000px;
+            height: 1000px;
+            position: absolute;
+            left: 200px;
+            top: 130px;
+        }
+    </style>
+    <style>
+        #body{
+            background-image: url("img/1.jpg");
+            background-size:100% 100%;
+            background-attachment: fixed;
+        }
+    </style>
+
+    <script type="text/javascript">
+        $(function () {
+            load();
+        });
+        function load(mvName){
+            $.ajax({
+                url: "/findMV",
+                type:"get",
+                data:{mvName:mvName},
+                dataType: "json",
+                success: function(data){
+                    console.log(data.length);
+                    console.log(data);
+                    var s = "";
+                    for (var i = 0; i < data.length; i++) {
+                        var mvUrl = data[i].url+".mp4";
+                        s += "<tr>";
+                        s += "<th> <input id=\""+data[i].id+ "\" type=\"checkbox\"> </th>";
+                        s += "<td>" + data[i].title + "</td>";
+                        s += "<td>" + data[i].singer + "</td>";
+                        s += "<td <a href=\"\">  <video src= \""+ mvUrl+"\"  + controls=\"controls\" preload=\"auto\" loop=\"loop\" width=30%>  >"  + "</video> </a> </td>";
+                        s+="<td > <button class='btn btn-default btn-sm' onclick=\"deleteInfo("+ data[i].id + ")\" > 删除</button> " +
+                            "<button class='btn btn-default btn-sm' onclick=\"loveInfo("+ data[i].id + ")\" > 喜欢</button>"+
+                            "</td>";
+                        s += "</tr>";
+                    }
+
+                    $("#info").html(s);
+
+                    var videos = document.getElementsByTagName("video");
+                    // 暂停函数
+                    function pauseAll() {
+                        var self = this;
+                        [].forEach.call(videos, function (i) {
+                            i !== self && i.pause();
+                        })
+                    }
+                    // 给play事件绑定暂停函数
+                    [].forEach.call(videos, function (i) {
+                        i.addEventListener("play", pauseAll.bind(i));
+                    });
+                }
+            });
+        }
+
+        function loveInfo(obj) {
+            console.log(obj);
+            $.ajax({
+                url:"/lovemv",
+                type: "post",
+                //发送给后端的数据
+                data: {"id": obj},
+                dataType: "json",
+                success: function (data) {
+                    if(data.msg===true){
+                        alert("加入喜欢的列表成功");
+                        window.location.href="MV.html";
+                    }else{
+                        alert("加入喜欢的列表失败或者已经存在该视频");
+                    }
+                }
+            });
+        }
+
+        function deleteInfo(obj) {
+            console.log(obj);
+            $.ajax({
+                url:"/deletemv",
+                type: "post",
+                //发送给后端的数据
+                data: {"id": obj},
+                dataType: "json",
+                success: function (data) {
+                    if(data.msg===true){
+                        alert("删除成功");
+                        window.location.href="MV.html";
+                    }else{
+                        alert("删除失败");
+                    }
+                }
+            });
+        }
+
+        $(function () {
+            $("#submit1").click(function () {
+                var name = $("#exampleInputName2").val();
+                load(name);
+            });
+            //请求完成了
+            $.when(load).done(function () {
+                //选取所有类型为CheckBox的元素
+                $("#delete").click(function () {
+                    var i=0;
+                    var id=new Array();
+                    $(":checkbox").each(function () {
+                        //如果被选中
+                        if($(this).is(':checked')){
+                            //获取id的值，存储到id数组当中
+                            id[i] = $(this).attr("id");
+                            i++;
+                        }
+                    });
+                    //发送ajax请求
+                    $.ajax({
+                        url:"/deleteSelmv",
+                        data:{"id":id},
+                        type: "POST",
+                        dataType:"json",
+                        success:function (data) {
+                            if(data.msg===true){
+                                alert("删除成功");
+                                window.location.href="MV.html";
+                            }else{
+                                alert("删除失败");
+                            }
+                        }
+                    });
+                });
+            });
+        });
+
+    </script>
+</head>
+
+<body id="body">
+<div class="container">
+    <h3 style="text-align: center">MV播放</h3>
+    <div style="float: left;">
+        <form class="form-inline">
+            <div class="form-group">
+                <label for="exampleInputName2">MV名</label>
+                <input name="name" type="text" class="form-control" id="exampleInputName2" >
+            </div>
+            <button id="submit1" type="button" class="btn btn-default">查询</button>
+        </form>
+    </div>
+    <div style="float: right;margin-bottom: 15px">
+        <a class="btn btn-primary" href="/list.html">回到首页</a>
+        <a class="btn btn-primary" href="/lovemv.html">我喜欢的MV</a>
+        <a class="btn btn-primary" href="/uploadMV.html">添加MV</a>
+        <a id="delete" class="btn btn-primary">删除选中</a>
+    </div>
+
+    <table border="1" class="table table-bordered table-hover">
+        <tr class="success">
+            <th>选择</th>
+            <th>歌名</th>
+            <th>歌手</th>
+            <th width="50%">视频播放</th>
+            <th>操作</th>
+        </tr>
+        <tbody id="info" valign="middle">
+
+        </tbody>
+    </table>
+    <div>
+        <nav aria-label="Page navigation">
+            <ul id="all" class="pagination">
+
+            </ul>
+        </nav>
+    </div>
+</div>
+</body>
+</html>

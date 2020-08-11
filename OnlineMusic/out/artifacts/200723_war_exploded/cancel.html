@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <title>注销 OnlineMusic</title>
+
+    <!-- 1. 导入CSS的全局样式 -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <!-- 2. jQuery导入，建议使用1.9以上的版本 -->
+    <script src="js/jquery-3.1.1.min.js"></script>
+    <!-- 3. 导入bootstrap的js文件 -->
+    <!--<script src="js/bootstrap.min.js"></script>-->
+    <script type="text/javascript"></script>
+    <style>
+        #body{
+            background-image: url("img/input-bg-01.jpg");
+            background-size:100% 100%;
+            background-attachment: fixed;
+        }
+    </style>
+    <script>
+        $(function () {
+            $("#submit").click(function () {
+                var username=$("#user").val();
+                var password=$("#password").val();
+                $.ajax({
+                    url:"/cancel",
+                    data:{"username":username,"password":password},
+                    type:"POST",
+                    dataType:"json",
+                    success:function (data) {
+                        console.log(data);
+                        if(data.msg===true){
+                            alert("账号注销成功！");
+                            window.location.href="index.html";
+                        } else {
+                            alert("账号注销失败！");
+                            window.location.href="index.html";
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</head>
+<body id="body">
+<div class="container" style="width: 400px;margin-top: 110px;background-color: rgba(255,255,255,0.8)">
+    <h3 style="text-align: center;">是否注销用户</h3>
+    <!--        <form action="login" method="post">-->
+
+    <hr/>
+    <div class="form-group" style="text-align: center;"><!--class="form-group"-->
+        <button id="submit" type="button" class="btn btn btn-primary">是</button>
+        <a class="btn btn btn-primary" href="index.html">否</a>
+    </div>
+    <!--	  	</form>-->
+
+</div>
+</body>
+</html>
